@@ -28,13 +28,41 @@ import os,sys
 from optparse import OptionParser
 
 def store_window_list(option, opt, value, parser):
+	"""Callback for storing the window list. 
+		Needs to go here for the option parser."""
 	a = value.split(",")
 	parser.values.windows = a
 	parser.values.window = a[0]
 
 #######################################################
 
-parser = OptionParser()
+usage  = """%prog [-v] -w [window] -f [input_file].csv
+
+This script will calculate the levenshtein distance 
+for a given window against mediation data used in {PAPER}.
+
+Input Files:
+	The input csv should follow the following format:
+	[transcript #] [turn] [speaker ID] [mean] [mode] [high] [low] [Frame In] [Frame Out]
+
+	mean,mode,high,low,framein,frameout are all considered 'data columns'
+
+Output Files:
+	This version will create an output file for each data column 
+	in a directory named 'outs' with the following naming convention:
+
+	[transcipt_id]_[column_name].csv
+
+	thus creating [number of transcripts] * 6 output files (since there are 6 data columns)
+
+Example:
+	%prog -w 111,222,333 -f input.csv
+
+NOTE: This has been developed and tested in python 2.7. 
+	It will probably work in 2.5-6, but just FYI
+"""
+		
+parser = OptionParser(usage)
 
 parser.add_option(	"-v", "--verbose", 
 					dest="verbose",default=False,
@@ -46,20 +74,10 @@ parser.add_option(	"-f", "--file",
 					help="use input file"
 					)         
 
-parser.add_option(	"-o", "--output", 
-					dest="output",action="store",
-					help="specify output file name"
-					)         
-
 parser.add_option(	"-w", "--window", 
 					dest="window",action="callback", callback=store_window_list, type="string",
-					help="specify the window to compare to"
+					help="specify the window(s) to compare to"
 					)         
-
-parser.add_option(  "-c", "--type-column",
-					dest="type-column",action="store",
-					help="specify which column upon which to apply the levenshtein analysis for the windows"
-				 )
 
 
 (options,args) = parser.parse_args()
