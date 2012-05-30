@@ -27,6 +27,11 @@ import os,sys
 
 from optparse import OptionParser
 
+def store_window_list(option, opt, value, parser):
+	a = value.split(",")
+	parser.values.windows = a
+	parser.values.window = a[0]
+
 #######################################################
 
 parser = OptionParser()
@@ -47,15 +52,21 @@ parser.add_option(	"-o", "--output",
 					)         
 
 parser.add_option(	"-w", "--window", 
-					dest="window",action="store",
+					dest="window",action="callback", callback=store_window_list, type="string",
 					help="specify the window to compare to"
 					)         
+
+parser.add_option(  "-c", "--type-column",
+					dest="type-column",action="store",
+					help="specify which column upon which to apply the levenshtein analysis for the windows"
+				 )
 
 
 (options,args) = parser.parse_args()
 
 
 #######################################################
+
 
 def listprintstr(astr):
 	return '  '.join(list(astr))
@@ -100,7 +111,7 @@ def LevDist(str1,str2,debug=False):
 
 class Utterance(object):
 	"""utterance data structure."""
-	def __init__(self, id = 0, owner = '', type = 0):
+	def __init__(self, id = 0, owner = '', type = [0,]):
 		super(Utterance, self).__init__()
 
 		self.id = id
@@ -115,25 +126,28 @@ class Session(object):
 		self.id = id
 		self.utterances = []
 	
+	def __str__(self):
+		return "Session object with id: %s"%(self.id)
+	
 	def set_id(self, id):
 		self.id = id
 	
 	def add_utterance(self, utterance):
 		self.utterances.append(utterance)
 	
-	def get_utterance_type_list(self):
-		return [u.type for u in self.utterances]
+	def get_utterance_type_list(self,index = 0):
+		return [u.type[index] for u in self.utterances]
 	
-	def get_type_windows(self, window_size):
-		t = self.get_utterance_type_list()
+	def get_type_windows(self, window_size, type_index = 0):
+		t = self.get_utterance_type_list(type_index)
 		window_list = []
 		for c in range(len(t) - window_size):
 			window_list.append(''.join(t[c:c+window_size]))
 		return window_list
 	
-	def calculate_synchrony(self, comp_str):
+	def calculate_synchrony(self, comp_str, type_index = 0):
 		l = len(comp_str)
-		tw = self.get_type_windows(l)
+		tw = self.get_type_windows(l,type_index)
 		out = []
 		for w in tw:
 			out.append(LevDist(w,comp_str))
@@ -150,8 +164,8 @@ def debug(debug_string):
 def main():
 
 	uReader = csv.reader(open(options.filename, 'r'), delimiter = ',')
-	uWriter = csv.writer(open(options.output,'w'), delimiter = ',')
 
+	mmhlff = ["mean","mode","high","low","frame-in","frame-out"]
 
 	sessions = []
 	current_id = ''
@@ -166,17 +180,52 @@ def main():
 			current_id = i[0]
 			current_sesh = Session()
 
-		else: # we're still on the old sesh.
-			current_sesh.add_utterance(Utterance(id = i[2], owner = i[1], type = i[3]))
+		current_sesh.add_utterance(Utterance(id = i[1], owner = i[2], type = i[3:8]))
 
 	# last session 
 	current_sesh.set_id(current_id)
 	sessions.append(current_sesh) 
 			
-	print [s.id for s in sessions]
+	#print [s.id for s in sessions]
+	for i in sessions:
+		print i
+
+	for s in sessions[1:-1:]:
+		for col in range(5):
+			print 'current session:', s
+			outfile = open("outs/"+s.id+"_"+mmhlff[col]+'.csv','w')
+			uWriter = csv.writer(outfile, delimiter = ',')
+			uWriter.writerow(options.windows)
+
+			# now we start calculating synchrony for each window
+
+			synchs = []
+
+			for window in options.windows:
+				#print window
+				synchs.append(s.calculate_synchrony(window,col))
+
+			ch = len(synchs[0])
+
+			for i in synchs:
+				print len(i) == ch
+
+			a = []
+			l = len(synchs[0])
+			for i in range(len(synchs[0])):
+				for x in synchs:
+					a.append(x[i])
+			
+				uWriter.writerow(a)
+				a = []
+
+			#sys.exit(0)
+			#print s.id+"_"+mmhlff[col-3]+'.csv'
 	
+	"""
 	for ws in [[s.id] + s.calculate_synchrony(options.window) for s in sessions[1::]]:
 		uWriter.writerow(ws) 	
+		"""
 
 if __name__ == '__main__':
 	main()
