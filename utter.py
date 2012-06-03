@@ -50,11 +50,14 @@ Input Files:
 
 Output Files:
 	This version will create an output file for each data column 
-	in a directory named 'outs' with the following naming convention:
+	in a user-specified directory with the following naming convention:
 
 	[transcipt_id]_[column_name].csv
 
 	thus creating [number of transcripts] * 6 output files (since there are 6 data columns)
+
+	if no directory is specified on the command line, 
+	a directory called 'out' will be created in the current directory.
 
 Example:
 	%prog -w 111,222,333 -f input.csv
