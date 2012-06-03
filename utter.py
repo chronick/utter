@@ -24,6 +24,7 @@
 
 import csv
 import os,sys
+import os.path as path
 
 from optparse import OptionParser
 
@@ -65,17 +66,29 @@ NOTE: This has been developed and tested in python 2.7.
 parser = OptionParser(usage)
 
 parser.add_option(	"-v", "--verbose", 
-					dest="verbose",default=False,
+					dest="verbose",
+					default=False,
 					help="make verbose"
 					)
 
 parser.add_option(	"-f", "--file", 
-					dest="filename",action="store",
+					dest="filename",
+					action="store",
 					help="use input file"
 					)         
 
+parser.add_option(	"-o", "--output_dir", 
+					dest="output_dir",
+					action="store",
+					default="./out",
+					help="specify output directory"
+					)         
+
 parser.add_option(	"-w", "--window", 
-					dest="window",action="callback", callback=store_window_list, type="string",
+					dest="window",
+					action="callback", 
+					callback=store_window_list, 
+					type="string",
 					help="specify the window(s) to compare to"
 					)         
 
@@ -159,7 +172,7 @@ class Session(object):
 	def get_type_windows(self, window_size, type_index = 0):
 		t = self.get_utterance_type_list(type_index)
 		window_list = []
-		for c in range(len(t) - window_size):
+		for c in range(len(t) - (window_size-1)):
 			window_list.append(''.join(t[c:c+window_size]))
 		return window_list
 	
@@ -181,7 +194,10 @@ def debug(debug_string):
 
 def main():
 
-	uReader = csv.reader(open(options.filename, 'r'), delimiter = ',')
+	if not path.exists(options.output_dir):
+		os.mkdir(path.abspath(options.output_dir))
+
+	uReader = csv.DictReader(open(options.filename, 'r'), delimiter = ',')
 
 	mmhlff = ["mean","mode","high","low","frame-in","frame-out"]
 
@@ -191,27 +207,30 @@ def main():
 
 	for i in uReader:
 
-		if i[0] != current_id: # we're on a new sesh. good times abide.
-			debug('current: %s	new: %s'%(current_id, i[0]))
+		if i['Trans #'] != current_id: # we're on a new sesh. good times abide.
+			debug('current: %s	new: %s'%(current_id, i['Trans #']))
 			current_sesh.set_id(current_id)
 			sessions.append(current_sesh)
-			current_id = i[0]
+			current_id = i['Trans #']
 			current_sesh = Session()
 
-		current_sesh.add_utterance(Utterance(id = i[1], owner = i[2], type = i[3:8]))
+		current_sesh.add_utterance(
+			Utterance(	id = i['Turn'], owner = i['Speaker'], 
+						type = [i['Mean'],i['Mode'],i['High'],i['Low'],i['Frame In'],i['Frame Out']]))
+
+		#print current_id, i['Turn']
 
 	# last session 
 	current_sesh.set_id(current_id)
 	sessions.append(current_sesh) 
 			
-	#print [s.id for s in sessions]
-	for i in sessions:
-		print i
+	print [s.id for s in sessions]
 
-	for s in sessions[1:-1:]:
-		for col in range(5):
-			print 'current session:', s
-			outfile = open("outs/"+s.id+"_"+mmhlff[col]+'.csv','w')
+	for s in sessions[1::]:
+		for col in range(6):
+			#print 'current session:', s
+			filename =  s.id+"_"+mmhlff[col]+'.csv'
+			outfile = open(path.join(options.output_dir,filename),'w')
 			uWriter = csv.writer(outfile, delimiter = ',')
 			uWriter.writerow(options.windows)
 
@@ -225,9 +244,6 @@ def main():
 
 			ch = len(synchs[0])
 
-			for i in synchs:
-				print len(i) == ch
-
 			a = []
 			l = len(synchs[0])
 			for i in range(len(synchs[0])):
@@ -237,13 +253,7 @@ def main():
 				uWriter.writerow(a)
 				a = []
 
-			#sys.exit(0)
-			#print s.id+"_"+mmhlff[col-3]+'.csv'
 	
-	"""
-	for ws in [[s.id] + s.calculate_synchrony(options.window) for s in sessions[1::]]:
-		uWriter.writerow(ws) 	
-		"""
 
 if __name__ == '__main__':
 	main()
