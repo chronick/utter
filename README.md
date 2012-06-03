@@ -6,23 +6,24 @@ analysis of mediation utterances using levenshtein distance
 This script will calculate the levenshtein distance 
 for a given window against mediation data used in
 
-_Donohue, Sherry, Idzik, Walsh. Interactive Framing in Divorce Mediation_
+__Donohue, Sherry, Idzik, Walsh. Interactive Framing in Divorce Mediation__
 
 A link to the paper is forthcoming, pending publication.
 
 Input Files:
 -----
 The input csv should follow the following format:
-[transcript #] [turn] [speaker ID] [mean] [mode] [high] [low] [Frame In] [Frame Out]
 
-mean,mode,high,low,framein,frameout are all considered 'data columns'
+	[Trans #] [Turn] [Speaker] [Mean] [Mode] [High] [Low] [Frame In] [Frame Out]
+
+these are all considered 'data columns'
 
 Output Files:
 -----
 This version will create an output file for each data column 
 in a user-specified directory with the following naming convention:
 
-[transcipt_id]\_[column_name].csv
+[transcipt\_id]\_[column\_name].csv
 
 thus creating [number of transcripts] \* 6 output files (since there are 6 data columns)
 
