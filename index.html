@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Utter by ndonohue</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Utter</h1>
+        <p>analysis of mediation utterances using levenshtein distance</p>
+
+        <p class="view"><a href="https://github.com/ndonohue/utter">View the Project on GitHub <small>ndonohue/utter</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/ndonohue/utter/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ndonohue/utter/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ndonohue/utter">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>utter</h1>
+
+<p>analysis of mediation utterances using levenshtein distance</p>
+
+<p>This script will calculate the levenshtein distance 
+for a given window against mediation data used in</p>
+
+<p><strong>Donohue, Sherry, Idzik, Walsh. Interactive Framing in Divorce Mediation</strong></p>
+
+<p>A link to the paper is forthcoming, pending publication.</p>
+
+<h2>Input Files:</h2>
+
+<p>The input csv should follow the following format:</p>
+
+<pre><code>[Trans #] [Turn] [Speaker] [Mean] [Mode] [High] [Low] [Frame In] [Frame Out]
+</code></pre>
+
+<p>these are all considered 'data columns'</p>
+
+<h2>Output Files:</h2>
+
+<p>This version will create an output file for each data column 
+in a user-specified directory with the following naming convention:</p>
+
+<p>[transcipt_id]_[column_name].csv</p>
+
+<p>thus creating [number of transcripts] * 6 output files (since there are 6 data columns)</p>
+
+<p>if no directory is specified on the command line, 
+a directory called 'out' will be created in the current directory.</p>
+
+<h2>Example:</h2>
+
+<pre><code>utter.py -w 111,222,333 -f input.csv -o outputs
+</code></pre>
+
+<p><em>NOTE: This has been developed and tested in python 2.7.</em> </p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/ndonohue">ndonohue</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
